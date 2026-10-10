@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from tests.conftest import FakeLLM
 
-from skill_eval_kit.models.portfolio import (
+from skill_scoreboard.models.portfolio import (
     CriticReport,
     LintReport,
     MinedSkillUsage,
@@ -13,8 +13,8 @@ from skill_eval_kit.models.portfolio import (
     SkillMeta,
     TriggerReport,
 )
-from skill_eval_kit.models.results import ABReport, ArmAggregate
-from skill_eval_kit.portfolio import (
+from skill_scoreboard.models.results import ABReport, ArmAggregate
+from skill_scoreboard.portfolio import (
     build_scorecard,
     cluster_overlaps,
     composite_score,
@@ -26,8 +26,8 @@ from skill_eval_kit.portfolio import (
     run_triggers,
     similarity_matrix,
 )
-from skill_eval_kit.portfolio.scorecard import ab_score, coverage_confidence, shrink
-from skill_eval_kit.portfolio.triggers import cross_activation_pairs, dump_probe_template
+from skill_scoreboard.portfolio.scorecard import ab_score, coverage_confidence, shrink
+from skill_scoreboard.portfolio.triggers import cross_activation_pairs, dump_probe_template
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 

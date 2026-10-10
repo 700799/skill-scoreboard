@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from skill_eval_kit.models.task import RunLimits, WorkspaceSpec
-from skill_eval_kit.runner.claude_cli import ClaudeCliRunner
-from skill_eval_kit.runner.replay import ReplayRunner
-from skill_eval_kit.runner.workspace import inject_skill, materialize, sandbox
+from skill_scoreboard.models.task import RunLimits, WorkspaceSpec
+from skill_scoreboard.runner.claude_cli import ClaudeCliRunner
+from skill_scoreboard.runner.replay import ReplayRunner
+from skill_scoreboard.runner.workspace import inject_skill, materialize, sandbox
 
 LIMITS = RunLimits(max_turns=6, max_budget_usd=0.15)
 

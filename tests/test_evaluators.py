@@ -2,14 +2,14 @@ from pathlib import Path
 
 from tests.conftest import FakeLLM
 
-from skill_eval_kit.evaluators import EvalContext, registered_types, run_evaluations
-from skill_eval_kit.evaluators.ast_assertions import evaluate as eval_ast
-from skill_eval_kit.evaluators.llm_judge import evaluate as eval_judge
-from skill_eval_kit.evaluators.pydev_static import evaluate as eval_static
-from skill_eval_kit.evaluators.pydev_tests import evaluate as eval_tests
-from skill_eval_kit.evaluators.skill_activation import evaluate as eval_skill
-from skill_eval_kit.evaluators.trajectory_efficiency import evaluate as eval_traj
-from skill_eval_kit.models.task import (
+from skill_scoreboard.evaluators import EvalContext, registered_types, run_evaluations
+from skill_scoreboard.evaluators.ast_assertions import evaluate as eval_ast
+from skill_scoreboard.evaluators.llm_judge import evaluate as eval_judge
+from skill_scoreboard.evaluators.pydev_static import evaluate as eval_static
+from skill_scoreboard.evaluators.pydev_tests import evaluate as eval_tests
+from skill_scoreboard.evaluators.skill_activation import evaluate as eval_skill
+from skill_scoreboard.evaluators.trajectory_efficiency import evaluate as eval_traj
+from skill_scoreboard.models.task import (
     AstAssertionsEval,
     LlmJudgeEval,
     PydevStaticEval,
@@ -18,7 +18,7 @@ from skill_eval_kit.models.task import (
     TaskSpec,
     TrajectoryEfficiencyEval,
 )
-from skill_eval_kit.runner.ndjson import parse_file
+from skill_scoreboard.runner.ndjson import parse_file
 
 TASK = TaskSpec(
     id="t-eval",

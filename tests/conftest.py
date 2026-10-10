@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 
-from skill_eval_kit.models.trajectory import (
+from skill_scoreboard.models.trajectory import (
     AssistantTurn,
     RunOutcome,
     ToolCall,

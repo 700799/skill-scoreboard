@@ -716,7 +716,7 @@ wheels = [
 ]
 
 [[package]]
-name = "skill-eval-kit"
+name = "skill-scoreboard"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

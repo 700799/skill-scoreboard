@@ -1,4 +1,4 @@
-# skill-eval-kit
+# skill-scoreboard
 
 An evaluation framework for **Claude Code skills** and Python-dev (`pydev`) plugins.
 
@@ -21,7 +21,7 @@ It works at two scales:
 ## Install
 
 ```bash
-pip install skill-eval-kit        # installs the `skill-eval` command
+pip install skill-scoreboard      # installs the `skill-scoreboard` command
 ```
 
 From a checkout, for development:
@@ -37,14 +37,14 @@ offline** — pass `--no-llm` and `--runner replay` to work with no network at a
 ## Quickstart
 
 ```bash
-skill-eval validate examples/tasks/*.yaml examples/probes.yaml       # schema-check
-skill-eval --no-llm audit examples/skills --json runs/audit.json     # Tier 0: lint + overlap
-skill-eval mine ~/.claude/projects --skills-dir examples/skills --json runs/mine.json
-skill-eval --no-llm ab examples/tasks/pydev-fastapi-pydantic-01.yaml \
+skill-scoreboard validate examples/tasks/*.yaml examples/probes.yaml       # schema-check
+skill-scoreboard --no-llm audit examples/skills --json runs/audit.json     # Tier 0: lint + overlap
+skill-scoreboard mine ~/.claude/projects --skills-dir examples/skills --json runs/mine.json
+skill-scoreboard --no-llm ab examples/tasks/pydev-fastapi-pydantic-01.yaml \
     --runner replay --trials 2 \
     --control-fixture tests/fixtures/ndjson/loopy_no_skill.ndjson \
     --treatment-fixture tests/fixtures/ndjson/success_with_skill.ndjson
-skill-eval rank examples/skills --audit runs/audit.json --runs runs \
+skill-scoreboard rank examples/skills --audit runs/audit.json --runs runs \
     --mine runs/mine.json --md runs/leaderboard.md
 ```
 
@@ -109,11 +109,11 @@ before spending real money:
 
 | Tier | Command | Cost | Produces |
 |---|---|---|---|
-| **0 · Static** | `skill-eval audit <dir>` | free | Lint findings + TF-IDF overlap clusters |
-| **1 · Triggers** | `skill-eval audit <dir> --probes probes.yaml` | cheap | Precision/recall/F1 + cross-activation confusion matrix |
-| **2 · A/B** | `skill-eval ab <task.yaml>` | real runs | Measured value lift |
-| **Critic** | `skill-eval audit <dir> --critic` | one call/skill | Actionable rewrite suggestions |
-| **Mining** | `skill-eval mine <transcripts>` | free | Real-world activation frequency and cost |
+| **0 · Static** | `skill-scoreboard audit <dir>` | free | Lint findings + TF-IDF overlap clusters |
+| **1 · Triggers** | `skill-scoreboard audit <dir> --probes probes.yaml` | cheap | Precision/recall/F1 + cross-activation confusion matrix |
+| **2 · A/B** | `skill-scoreboard ab <task.yaml>` | real runs | Measured value lift |
+| **Critic** | `skill-scoreboard audit <dir> --critic` | one call/skill | Actionable rewrite suggestions |
+| **Mining** | `skill-scoreboard mine <transcripts>` | free | Real-world activation frequency and cost |
 
 **Tier 0** catches the problems you can find for free: descriptions too vague to
 route on, skills whose own body costs thousands of tokens on every activation,
@@ -222,7 +222,7 @@ Every measurement reads one normalized `Trajectory`, and three sources produce i
 ```
 claude -p --output-format stream-json ─┐
 recorded NDJSON fixture ───────────────┼──> runner/ndjson.py ──> Trajectory ──> metrics
-real session transcript (skill-eval mine) ────┘                                   └──> evaluators
+real session transcript (skill-scoreboard mine) ────┘                                   └──> evaluators
 ```
 
 Because replay is a first-class source, the entire pipeline — including the
@@ -263,7 +263,7 @@ One-time setup, per index, at https://pypi.org/manage/account/publishing/
 
 | Field | Value |
 |---|---|
-| PyPI project name | `skill-eval-kit` |
+| PyPI project name | `skill-scoreboard` |
 | Owner / repository | `700799` / `agent-skill-eval` |
 | Workflow name | `release.yml` |
 | Environment | `pypi` (`testpypi` on TestPyPI) |

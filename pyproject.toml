@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "skill-eval-kit"
+name = "skill-scoreboard"
 version = "0.1.0"
 description = "Evaluation framework for Claude Code skills and pydev plugins: A/B benchmarking, token-waste detection, skill adherence, and portfolio ranking."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "skill-eval-kit contributors" }]
+authors = [{ name = "skill-scoreboard contributors" }]
 keywords = ["claude", "claude-code", "evaluation", "benchmark", "agent", "skills", "llm"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -36,13 +36,13 @@ dev = [
 ]
 
 [project.scripts]
-skill-eval = "skill_eval_kit.cli:main"
+skill-scoreboard = "skill_scoreboard.cli:main"
 
 [project.urls]
 Repository = "https://github.com/700799/agent-skill-eval"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/skill_eval_kit"]
+packages = ["src/skill_scoreboard"]
 
 [tool.ruff]
 line-length = 100
