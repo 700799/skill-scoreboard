@@ -8,7 +8,7 @@ name: Release
 # Auth is PyPI Trusted Publishing (OIDC) — no API token is stored in this
 # repository. Configure the publisher once per index at
 # https://pypi.org/manage/account/publishing/ with:
-#   owner/repository: 700799/agent-skill-eval
+#   owner/repository: 700799/skill-scoreboard
 #   workflow name:    release.yml
 #   environment:      pypi          (and testpypi on test.pypi.org)
 

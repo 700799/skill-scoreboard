@@ -264,7 +264,7 @@ One-time setup, per index, at https://pypi.org/manage/account/publishing/
 | Field | Value |
 |---|---|
 | PyPI project name | `skill-scoreboard` |
-| Owner / repository | `700799` / `agent-skill-eval` |
+| Owner / repository | `700799` / `skill-scoreboard` |
 | Workflow name | `release.yml` |
 | Environment | `pypi` (`testpypi` on TestPyPI) |
 

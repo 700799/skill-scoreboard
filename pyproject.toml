@@ -39,7 +39,7 @@ dev = [
 skill-scoreboard = "skill_scoreboard.cli:main"
 
 [project.urls]
-Repository = "https://github.com/700799/agent-skill-eval"
+Repository = "https://github.com/700799/skill-scoreboard"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/skill_scoreboard"]
