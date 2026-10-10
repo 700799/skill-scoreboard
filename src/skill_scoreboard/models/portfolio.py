@@ -99,7 +99,7 @@ class MiningReport(BaseModel):
 
 
 class AuditReport(BaseModel):
-    """Everything `ase audit` produces in one artifact."""
+    """Everything `skill-scoreboard audit` produces in one artifact."""
 
     model_config = ConfigDict(extra="forbid")
 

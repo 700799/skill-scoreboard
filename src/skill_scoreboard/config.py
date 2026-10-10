@@ -40,7 +40,7 @@ DEFAULT_WEIGHTS: dict[str, float] = {
 #: TF-IDF cosine similarity at or above which two skills join an overlap cluster.
 #: Cosine on prose rarely exceeds ~0.6 even for genuine duplicates, while
 #: unrelated skills sit near 0 — so 0.45 separates them with room to spare.
-#: Tune per library size with `ase audit --similarity-threshold`.
+#: Tune per library size with `skill-scoreboard audit --similarity-threshold`.
 DEFAULT_SIMILARITY_THRESHOLD = 0.45
 
 #: Cross-activation fraction above which the confusion matrix signals a merge.

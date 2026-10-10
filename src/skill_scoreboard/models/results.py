@@ -87,7 +87,7 @@ class ABReport(BaseModel):
 
 
 class TaskReport(BaseModel):
-    """Single-arm report produced by ``ase run``."""
+    """Single-arm report produced by ``skill-scoreboard run``."""
 
     model_config = ConfigDict(extra="forbid")
 

@@ -57,7 +57,7 @@ def save_meta(run_dir: Path, extra: dict[str, Any] | None = None) -> Path:
 
 
 def load_ab_reports(runs_root: Path) -> list[ABReport]:
-    """All A/B reports under a runs directory (used by ``ase rank``)."""
+    """All A/B reports under a runs directory (used by ``skill-scoreboard rank``)."""
     reports: list[ABReport] = []
     if not runs_root.is_dir():
         return reports

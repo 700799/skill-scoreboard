@@ -1,20 +1,60 @@
 # skill-scoreboard
 
-An evaluation framework for **Claude Code skills** and Python-dev (`pydev`) plugins.
+**Measure whether your Claude Code skills actually earn their keep — then rank your whole library.**
 
-Most skill "testing" answers only *did the task pass?* — which a capable model
-often does anyway, skill or no skill. This framework measures whether a skill
-actually **earns its keep**: does it change the outcome, does it save or waste
-tokens, and did the agent genuinely follow it or just fall back on prior
-knowledge and pass by luck?
+A skill is just instructions in a Markdown file. That makes it easy to write and
+impossible to evaluate by reading: a capable model often completes the task with
+or without it. So "the tests passed" proves nothing about the skill, and a library
+grows until nobody can say which entries help, which overlap, and which are quietly
+costing tokens on every activation.
 
-It works at two scales:
+`skill-scoreboard` answers that with measurement instead of opinion. Every task runs
+twice — **control** with skills disabled, **treatment** with the skill injected — and
+the difference is the skill's value:
 
-- **One skill, deeply** — A/B a task with the skill loaded vs. not, and grade
-  the result on code quality, trajectory efficiency, and architectural adherence.
-- **A whole library** — audit, score, and rank every skill you have, with a
-  KEEP / FIX / MERGE / RETIRE call for each. Built for teams whose skill
-  collection has outgrown anyone's ability to review it by hand.
+| metric | control | treatment | delta |
+|---|---|---|---|
+| pass rate | 0% | 100% | +100pp |
+| mean total tokens | 65,400 | 33,575 | -48.7% |
+| duplicate tool calls | 3.0 | 0.0 | -3.0 |
+| file re-reads | 2.0 | 0.0 | -2.0 |
+| skill activation | 0% | 100% | +100pp |
+
+Point it at a whole directory of skills and it returns a ranked scoreboard with a
+decision and a stated reason for each one:
+
+| rank | skill | score | confidence | recommendation | reasons |
+|---|---|---|---|---|---|
+| 1 | `fastapi-schema` | 1.00 | 55% | **KEEP** | clears every tier that has run |
+| 2 | `py-validation` | 1.00 | 15% | **MERGE → fastapi-schema** | overlaps fastapi-schema (similarity 0.55); fastapi-schema scores higher |
+| 3 | `helpful-helper` | 0.43 | 15% | **FIX** | blocking lint findings: dead-reference; composite 0.43 is mid-range |
+
+Both tables above are real output from the shipped examples, not mockups.
+
+### What makes it more than a test runner
+
+- **It catches the bypass.** A skill whose tasks pass while its *activation rate*
+  stays low isn't working — the model is solving the problem from prior knowledge.
+  That pattern gets flagged `FIX` instead of counted as success.
+- **It measures waste, not just correctness.** Duplicate tool calls, re-reading
+  large files without editing them, and runaway per-turn context growth are
+  detected from the agent's trajectory.
+- **It checks adherence structurally.** Python AST assertions verify the skill's
+  prescribed constructs are present and its forbidden ones absent — so "used
+  Pydantic v2 `@field_validator`, never the v1 `@validator`" is a test, not a hope.
+- **It never fakes confidence.** Every score carries the share of evidence behind
+  it. A skill with only a free static lint cannot outrank one measured end to end,
+  and is never retired on thin evidence.
+- **It runs offline.** Recorded sessions replay deterministically, so the whole
+  suite — including the real `ruff`, `mypy`, and `pytest` evaluators — runs in CI
+  with no API key.
+
+### Two ways to use it
+
+| | Command | Cost |
+|---|---|---|
+| **One skill, deeply** | `skill-scoreboard ab task.yaml` | Real agent runs |
+| **A whole library** | `skill-scoreboard audit ./skills` → `rank` | Free static tier first, paid tiers only where they earn it |
 
 ---
 

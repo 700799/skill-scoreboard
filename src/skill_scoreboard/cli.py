@@ -449,9 +449,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_rank = sub.add_parser("rank", help="compose stored artifacts into a leaderboard")
     p_rank.add_argument("skills_dir")
-    p_rank.add_argument("--audit", help="audit.json from `ase audit`")
+    p_rank.add_argument("--audit", help="audit.json from `skill-scoreboard audit`")
     p_rank.add_argument("--runs", help="runs/ directory holding ab_report.json files")
-    p_rank.add_argument("--mine", help="mine.json from `ase mine`")
+    p_rank.add_argument("--mine", help="mine.json from `skill-scoreboard mine`")
     p_rank.add_argument("--weights", help="e.g. lint=0.1,trigger=0.2,ab=0.5,critic=0.2")
     p_rank.add_argument(
         "--similarity-threshold", type=float, default=config.DEFAULT_SIMILARITY_THRESHOLD

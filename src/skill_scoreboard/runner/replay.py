@@ -1,4 +1,4 @@
-"""Replay recorded NDJSON streams — offline tests, CI, and `ase report`."""
+"""Replay recorded NDJSON streams — offline tests, CI, and `skill-scoreboard report`."""
 
 from __future__ import annotations
 

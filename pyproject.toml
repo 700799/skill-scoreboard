@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "skill-scoreboard"
 version = "0.1.0"
-description = "Evaluation framework for Claude Code skills and pydev plugins: A/B benchmarking, token-waste detection, skill adherence, and portfolio ranking."
+description = "Benchmark Claude Code skills against a no-skill baseline, detect token waste and skill bypass, and rank a whole skill library KEEP/FIX/MERGE/RETIRE."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
