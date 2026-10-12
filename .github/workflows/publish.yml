@@ -1,4 +1,4 @@
-name: Release
+name: Publish
 
 # Publishing is a one-way door: a version number can never be reused on PyPI,
 # even after deletion. So every artifact is linted, type-checked, tested, and
@@ -9,7 +9,7 @@ name: Release
 # repository. Configure the publisher once per index at
 # https://pypi.org/manage/account/publishing/ with:
 #   owner/repository: 700799/skill-scoreboard
-#   workflow name:    release.yml
+#   workflow name:    publish.yml
 #   environment:      pypi          (and testpypi on test.pypi.org)
 
 on:

@@ -290,13 +290,14 @@ Claude Code ships an early-access, org-gated `claude plugin eval` that also runs
 control/treatment arms with regex, tool-use, and LLM graders. This project is
 standalone and complementary: it adds trajectory-level waste detection, AST
 adherence checks, and portfolio-scale ranking, and it runs anywhere the CLI
-runs. It is pinned against the `2.1.x` stream-json shape and parses defensively,
+runs. It targets the `2.1.x` stream-json shape (live-verified against CLI
+2.1.246 and 2.1.296) and parses defensively,
 ignoring unknown event types and fields so format drift degrades rather than breaks.
 
 ## Releasing
 
 Publishing runs on [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/)
-via `.github/workflows/release.yml` — no API token is stored in this repository.
+via `.github/workflows/publish.yml` — no API token is stored in this repository.
 
 One-time setup, per index, at https://pypi.org/manage/account/publishing/
 (and the same on test.pypi.org):
@@ -305,13 +306,13 @@ One-time setup, per index, at https://pypi.org/manage/account/publishing/
 |---|---|
 | PyPI project name | `skill-scoreboard` |
 | Owner / repository | `700799` / `skill-scoreboard` |
-| Workflow name | `release.yml` |
+| Workflow name | `publish.yml` |
 | Environment | `pypi` (`testpypi` on TestPyPI) |
 
 Then:
 
 ```bash
-# Dry run to TestPyPI first — Actions tab -> Release -> Run workflow -> testpypi
+# Dry run to TestPyPI first — Actions tab -> Publish -> Run workflow -> testpypi
 # Real release:
 git tag v0.1.0 && git push origin v0.1.0
 ```
