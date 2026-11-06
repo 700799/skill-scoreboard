@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,8 @@ _FRONTMATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n?", re.DOTALL)
 #: Relative path-like tokens in the body (references/foo.md, scripts/run.py, ...).
 _PATH_TOKEN = re.compile(r"(?<![\w./-])([\w-]+(?:/[\w.-]+)+\.[A-Za-z0-9]{1,5})")
 _SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv"}
+#: Markdown that is repository furniture rather than a skill, at any location.
+_NON_SKILL_STEMS = {"README", "CHANGELOG", "LICENSE", "CONTRIBUTING", "CODE_OF_CONDUCT"}
 
 
 def parse_skill(path: Path, *, name: str | None = None) -> SkillMeta:
@@ -46,12 +49,32 @@ def parse_skill(path: Path, *, name: str | None = None) -> SkillMeta:
     )
 
 
+def _depth_key(item: tuple[Path, SkillMeta]) -> tuple[int, Path]:
+    return len(item[0].parts), item[0]
+
+
 def discover_skills(root: str | Path) -> list[SkillMeta]:
     """Find every skill under ``root``.
 
-    Supports both layouts: bundle directories (``<name>/SKILL.md``) and flat
-    files (``<name>.md``). Plugin trees nest skills arbitrarily deep, so the
-    search is recursive.
+    Two layouts count: a bundle directory (``<name>/SKILL.md``) and a flat file
+    (``<name>.md``). Plugin trees nest skills arbitrarily deep, so the search is
+    recursive, with three rules that keep it from inventing skills:
+
+    * Everything inside a bundle belongs to that bundle. Its ``references/``,
+      ``examples/`` and notes are files it ships, and a ``SKILL.md`` nested
+      under it is a worked example, not a skill of its own.
+    * A flat ``.md`` counts only if it declares itself with YAML frontmatter.
+      A filename cannot say "this is a skill" the way ``SKILL.md`` does, so
+      without that declaration an ADR or a scratch note would become a skill
+      that fails every check a real one passes. ``SKILL.md`` itself is exempt,
+      so lint still reports a bundle that forgot its frontmatter.
+    * The root's own ``SKILL.md`` does not claim the tree beneath it. Pointing
+      at a single bundle yields that one skill; pointing at a library that also
+      holds a stray ``SKILL.md`` must not hide every skill under it.
+
+    When two skills declare the same name, the bundle wins over the flat file
+    and the shallowest wins over the deeper one, so the result does not depend
+    on traversal order.
     """
     root_path = Path(root)
     if root_path.is_file():
@@ -59,22 +82,40 @@ def discover_skills(root: str | Path) -> list[SkillMeta]:
     if not root_path.is_dir():
         raise FileNotFoundError(f"skills directory not found: {root_path}")
 
+    bundles: list[tuple[Path, SkillMeta]] = []
+    flats: list[tuple[Path, SkillMeta]] = []
+
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        current = Path(dirpath)
+        # Prune rather than filter afterwards: these trees are large and the
+        # names are matched below the root, so a root that merely *lives* under
+        # one of them (a checkout inside .venv, say) still discovers its skills.
+        dirnames[:] = sorted(d for d in dirnames if d not in _SKIP_DIRS)
+
+        if "SKILL.md" in filenames:
+            path = current / "SKILL.md"
+            bundles.append((path, parse_skill(path)))
+            if current != root_path:
+                dirnames[:] = []
+                continue
+
+        for name in sorted(filenames):
+            if name == "SKILL.md" or not name.endswith(".md"):
+                continue
+            path = current / name
+            if path.stem.upper() in _NON_SKILL_STEMS:
+                continue
+            meta = parse_skill(path)
+            if not meta.frontmatter:
+                continue
+            flats.append((path, meta))
+
     found: dict[str, SkillMeta] = {}
-    for path in sorted(root_path.rglob("SKILL.md")):
-        if _SKIP_DIRS & set(path.parts):
-            continue
-        meta = parse_skill(path)
-        found[meta.name] = meta
-    for path in sorted(root_path.rglob("*.md")):
-        if path.name == "SKILL.md" or _SKIP_DIRS & set(path.parts):
-            continue
-        if path.name.upper() in {"README.MD", "CHANGELOG.MD", "LICENSE.MD"}:
-            continue
-        meta = parse_skill(path)
+    for _path, meta in sorted(bundles, key=_depth_key) + sorted(flats, key=_depth_key):
         found.setdefault(meta.name, meta)
     return sorted(found.values(), key=lambda s: s.name)
 
 
 def skill_dir(meta: SkillMeta) -> Path:
-    path = Path(meta.path)
-    return path.parent if path.name == "SKILL.md" else path.parent
+    """The directory a skill's relative references resolve against."""
+    return Path(meta.path).parent

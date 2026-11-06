@@ -91,6 +91,140 @@ class TestDiscoveryAndLint:
         (tmp_path / "solo.md").write_text("---\nname: solo\n---\nbody\n", encoding="utf-8")
         assert [s.name for s in discover_skills(tmp_path)] == ["solo"]
 
+    def test_bundle_support_files_are_not_skills(self, tmp_path: Path) -> None:
+        """A bundle's references/examples/notes belong to it; they are not skills."""
+        bundle = tmp_path / "fastapi-schema"
+        (bundle / "references").mkdir(parents=True)
+        (bundle / "examples").mkdir()
+        (bundle / "SKILL.md").write_text(
+            "---\nname: fastapi-schema\ndescription: Use when defining payloads.\n---\nBody.\n",
+            encoding="utf-8",
+        )
+        (bundle / "references" / "guide.md").write_text("# notes", encoding="utf-8")
+        (bundle / "examples" / "walkthrough.md").write_text("# example", encoding="utf-8")
+        (bundle / "NOTES.md").write_text("# notes", encoding="utf-8")
+        (tmp_path / "flat-skill.md").write_text(
+            "---\nname: flat-skill\ndescription: Use when flat.\n---\nBody.\n", encoding="utf-8"
+        )
+
+        assert [s.name for s in discover_skills(tmp_path)] == ["fastapi-schema", "flat-skill"]
+
+    def test_nested_skill_md_is_an_example_not_a_skill(self, tmp_path: Path) -> None:
+        outer = tmp_path / "outer"
+        (outer / "examples" / "inner").mkdir(parents=True)
+        (outer / "SKILL.md").write_text(
+            "---\nname: outer\ndescription: Use when outer.\n---\nBody.\n", encoding="utf-8"
+        )
+        (outer / "examples" / "inner" / "SKILL.md").write_text(
+            "---\nname: inner\ndescription: A sample skill shown as an example.\n---\nBody.\n",
+            encoding="utf-8",
+        )
+        assert [s.name for s in discover_skills(tmp_path)] == ["outer"]
+
+    def test_root_that_is_itself_a_bundle(self, tmp_path: Path) -> None:
+        (tmp_path / "references").mkdir()
+        (tmp_path / "SKILL.md").write_text(
+            "---\nname: solo\ndescription: Use when solo.\n---\nBody.\n", encoding="utf-8"
+        )
+        (tmp_path / "references" / "extra.md").write_text("# extra", encoding="utf-8")
+        assert [s.name for s in discover_skills(tmp_path)] == ["solo"]
+
+    def test_repository_furniture_is_skipped(self, tmp_path: Path) -> None:
+        for name in (
+            "README.md",
+            "CHANGELOG.md",
+            "LICENSE.md",
+            "CONTRIBUTING.md",
+            "CODE_OF_CONDUCT.md",
+        ):
+            (tmp_path / name).write_text(
+                "---\nname: furniture\ndescription: Use when furniture.\n---\nB.\n",
+                encoding="utf-8",
+            )
+        (tmp_path / "real.md").write_text(
+            "---\nname: real\ndescription: Use when real.\n---\nBody.\n", encoding="utf-8"
+        )
+        assert [s.name for s in discover_skills(tmp_path)] == ["real"]
+
+    def test_root_skill_md_does_not_swallow_the_library(self, tmp_path: Path) -> None:
+        """A stray SKILL.md at the root must not hide every skill beneath it."""
+        for name in ("alpha", "beta"):
+            (tmp_path / name).mkdir()
+            (tmp_path / name / "SKILL.md").write_text(
+                f"---\nname: {name}\ndescription: Use when {name}.\n---\nBody.\n",
+                encoding="utf-8",
+            )
+        (tmp_path / "SKILL.md").write_text(
+            "---\nname: umbrella\ndescription: Use when umbrella.\n---\nBody.\n",
+            encoding="utf-8",
+        )
+        assert [s.name for s in discover_skills(tmp_path)] == ["alpha", "beta", "umbrella"]
+
+    def test_undeclared_markdown_is_not_a_skill(self, tmp_path: Path) -> None:
+        """A flat .md with no frontmatter is a document, whatever it is called."""
+        (tmp_path / "real").mkdir()
+        (tmp_path / "real" / "SKILL.md").write_text(
+            "---\nname: real\ndescription: Use when real.\n---\nBody.\n", encoding="utf-8"
+        )
+        (tmp_path / "docs" / "adr").mkdir(parents=True)
+        (tmp_path / "NOTES.md").write_text("# notes", encoding="utf-8")
+        (tmp_path / "TODO.md").write_text("# todo", encoding="utf-8")
+        (tmp_path / "docs" / "architecture.md").write_text("# arch", encoding="utf-8")
+        (tmp_path / "docs" / "adr" / "0001-choice.md").write_text("# adr", encoding="utf-8")
+        assert [s.name for s in discover_skills(tmp_path)] == ["real"]
+
+    def test_bundle_without_frontmatter_is_still_found(self, tmp_path: Path) -> None:
+        """SKILL.md declares itself by name, so lint can report the missing block."""
+        (tmp_path / "bare").mkdir()
+        (tmp_path / "bare" / "SKILL.md").write_text("no frontmatter here\n", encoding="utf-8")
+        skills = discover_skills(tmp_path)
+        assert [s.name for s in skills] == ["bare"]
+        checks = {f.check for f in lint_all(skills)[0].findings}
+        assert "no-frontmatter" in checks
+
+    def test_duplicate_names_resolve_shallowest_first(self, tmp_path: Path) -> None:
+        (tmp_path / "deep" / "nested").mkdir(parents=True)
+        (tmp_path / "shallow").mkdir()
+        for rel in ("deep/nested", "shallow"):
+            (tmp_path / rel / "SKILL.md").write_text(
+                "---\nname: dup\ndescription: Use when duplicated.\n---\nBody.\n",
+                encoding="utf-8",
+            )
+        skills = discover_skills(tmp_path)
+        assert len(skills) == 1
+        assert Path(skills[0].path).parent.name == "shallow"
+
+    def test_bundle_wins_over_flat_file_of_the_same_name(self, tmp_path: Path) -> None:
+        (tmp_path / "dup").mkdir()
+        (tmp_path / "dup" / "SKILL.md").write_text(
+            "---\nname: dup\ndescription: Use when bundled.\n---\nBody.\n", encoding="utf-8"
+        )
+        (tmp_path / "dup.md").write_text(
+            "---\nname: dup\ndescription: Use when flat.\n---\nBody.\n", encoding="utf-8"
+        )
+        skills = discover_skills(tmp_path)
+        assert len(skills) == 1 and Path(skills[0].path).name == "SKILL.md"
+
+    def test_root_living_under_a_skipped_directory(self, tmp_path: Path) -> None:
+        """Skip names are matched below the root, not in the root's own path."""
+        library = tmp_path / "node_modules" / "pkg" / "skills"
+        (library / "alpha").mkdir(parents=True)
+        (library / "alpha" / "SKILL.md").write_text(
+            "---\nname: alpha\ndescription: Use when alpha.\n---\nBody.\n", encoding="utf-8"
+        )
+        assert [s.name for s in discover_skills(library)] == ["alpha"]
+
+    def test_skipped_directories_below_root_are_pruned(self, tmp_path: Path) -> None:
+        (tmp_path / "node_modules" / "dep").mkdir(parents=True)
+        (tmp_path / "node_modules" / "dep" / "SKILL.md").write_text(
+            "---\nname: vendored\ndescription: Use when vendored.\n---\nB.\n", encoding="utf-8"
+        )
+        (tmp_path / "mine").mkdir()
+        (tmp_path / "mine" / "SKILL.md").write_text(
+            "---\nname: mine\ndescription: Use when mine.\n---\nBody.\n", encoding="utf-8"
+        )
+        assert [s.name for s in discover_skills(tmp_path)] == ["mine"]
+
     def test_lint_separates_good_from_vague(self, example_skills: list[SkillMeta]) -> None:
         by_skill = {r.skill: r for r in lint_all(example_skills)}
         assert by_skill["fastapi-schema"].score == 1.0
