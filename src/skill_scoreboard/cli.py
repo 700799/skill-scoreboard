@@ -318,6 +318,11 @@ def _parse_weights(raw: str | None) -> dict[str, float] | None:
 
 def cmd_rank(args: argparse.Namespace) -> int:
     skills = discover_skills(args.skills_dir)
+    if not skills:
+        # An empty leaderboard with exit 0 reads to a CI gate as a clean
+        # library; it almost always means the path is wrong.
+        print(f"no skills found under {args.skills_dir}", file=sys.stderr)
+        return EXIT_USAGE
     lint_reports = lint_all(skills)
     clusters = cluster_overlaps(skills, threshold=args.similarity_threshold)
     trigger_reports: list[TriggerReport] = []
