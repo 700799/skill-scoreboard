@@ -91,6 +91,52 @@ class TestDiscoveryAndLint:
         (tmp_path / "solo.md").write_text("---\nname: solo\n---\nbody\n", encoding="utf-8")
         assert [s.name for s in discover_skills(tmp_path)] == ["solo"]
 
+    def test_bundle_support_files_are_not_skills(self, tmp_path: Path) -> None:
+        """A bundle's references/examples/notes belong to it; they are not skills."""
+        bundle = tmp_path / "fastapi-schema"
+        (bundle / "references").mkdir(parents=True)
+        (bundle / "examples").mkdir()
+        (bundle / "SKILL.md").write_text(
+            "---\nname: fastapi-schema\ndescription: Use when defining payloads.\n---\nBody.\n",
+            encoding="utf-8",
+        )
+        (bundle / "references" / "guide.md").write_text("# notes", encoding="utf-8")
+        (bundle / "examples" / "walkthrough.md").write_text("# example", encoding="utf-8")
+        (bundle / "NOTES.md").write_text("# notes", encoding="utf-8")
+        (tmp_path / "flat-skill.md").write_text(
+            "---\nname: flat-skill\ndescription: Use when flat.\n---\nBody.\n", encoding="utf-8"
+        )
+
+        assert [s.name for s in discover_skills(tmp_path)] == ["fastapi-schema", "flat-skill"]
+
+    def test_nested_skill_md_is_an_example_not_a_skill(self, tmp_path: Path) -> None:
+        outer = tmp_path / "outer"
+        (outer / "examples" / "inner").mkdir(parents=True)
+        (outer / "SKILL.md").write_text(
+            "---\nname: outer\ndescription: Use when outer.\n---\nBody.\n", encoding="utf-8"
+        )
+        (outer / "examples" / "inner" / "SKILL.md").write_text(
+            "---\nname: inner\ndescription: A sample skill shown as an example.\n---\nBody.\n",
+            encoding="utf-8",
+        )
+        assert [s.name for s in discover_skills(tmp_path)] == ["outer"]
+
+    def test_root_that_is_itself_a_bundle(self, tmp_path: Path) -> None:
+        (tmp_path / "references").mkdir()
+        (tmp_path / "SKILL.md").write_text(
+            "---\nname: solo\ndescription: Use when solo.\n---\nBody.\n", encoding="utf-8"
+        )
+        (tmp_path / "references" / "extra.md").write_text("# extra", encoding="utf-8")
+        assert [s.name for s in discover_skills(tmp_path)] == ["solo"]
+
+    def test_repository_furniture_is_skipped(self, tmp_path: Path) -> None:
+        for name in ("README.md", "CHANGELOG.md", "LICENSE.md", "CONTRIBUTING.md"):
+            (tmp_path / name).write_text("# furniture", encoding="utf-8")
+        (tmp_path / "real.md").write_text(
+            "---\nname: real\ndescription: Use when real.\n---\nBody.\n", encoding="utf-8"
+        )
+        assert [s.name for s in discover_skills(tmp_path)] == ["real"]
+
     def test_lint_separates_good_from_vague(self, example_skills: list[SkillMeta]) -> None:
         by_skill = {r.skill: r for r in lint_all(example_skills)}
         assert by_skill["fastapi-schema"].score == 1.0
