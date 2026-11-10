@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skill-scoreboard"
-version = "0.1.0"
+version = "0.1.1"
 description = "Benchmark Claude Code skills against a no-skill baseline, detect token waste and skill bypass, and rank a whole skill library KEEP/FIX/MERGE/RETIRE."
 readme = "README.md"
 requires-python = ">=3.11"
